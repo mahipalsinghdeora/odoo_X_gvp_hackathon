@@ -1,86 +1,129 @@
-# 🚛 SmartFleet (FleetFlow Lite) – Intelligent Fleet & Logistics Management System
+# 🚛 SmartFleet – Intelligent Fleet & Logistics Management System  
 
-SmartFleet is a modular web-based fleet & logistics management system with role-based access, operational dashboards, and a lightweight decision-support workflow.
+---
 
-## 🌐 Live Demo
+## 🌐 Live Demo  
 
-👉 **[Launch SmartFleet Application](https://odoo-x-gvp-hackathon.onrender.com/login)**
+👉 **[Launch SmartFleet Application](https://odoo-x-gvp-hackathon.onrender.com/login)**  
 
-## 🚀 Core Features
+---
 
-### 🔐 Role-based access + approval workflow
-- Roles: **Manager**, **Dispatcher**, **Safety Officer**, **Financial Analyst**
-- Only **one user per non-manager role** (Dispatcher/Safety Officer/Financial Analyst)
-- Self-registration is available for non-manager roles via **Request access**
-- New registrations are created with status **pending** and must be **approved by the Manager** before login is allowed
+## 📌 Problem Statement  
 
-### 🚗 Vehicle Registry
-- Create and track vehicles (capacity, status, odometer)
+Traditional fleet management systems rely on manual logs, spreadsheets, and static dashboards.  
+They lack intelligent validation, proactive risk alerts, and sustainability insights.
 
-### 📦 Trip Dispatcher
-- Create trips and enforce basic validation (e.g., cargo weight)
+This leads to:
+- Poor fleet utilization  
+- Overloading risks  
+- Missed maintenance schedules  
+- Increasing fuel costs  
+- No environmental visibility  
 
-### 🛠 Maintenance & ⛽ Fuel logs
-- Track maintenance and fuel records
+---
 
-### 📊 Dashboards
-- Manager dashboard includes fleet counts, cost rollups, and role-requests management
+## 💡 Our Solution  
 
-## 🛠 Tech Stack
+SmartFleet is a modular web-based Fleet & Logistics Management System designed to provide:
 
-- Frontend: HTML, CSS, JavaScript
-- Backend: Flask (Python)
-- Database: SQLite (file-based, stored as `fleetflow.db` in the project folder)
-- Deployment: Render (supports `gunicorn`)
+- Smart decision-support logic  
+- Automated validation rules  
+- Driver compliance tracking  
+- Operational cost monitoring  
+- Sustainability analytics  
 
-## 🧰 Local Setup
+We go beyond simple CRUD dashboards by integrating operational intelligence into the workflow.
 
-### 1) Install dependencies
+---
 
-```bash
-python -m pip install -r requirements.txt
-```
+## 🚀 Core Features  
 
-### 2) Initialize/reset the database (optional)
+### 🔐 Role-Based Authentication  
+- Secure login system  
+- Controlled access for different users  
 
-```bash
-python init_db.py
-```
+### 🚗 Vehicle Registry  
+- Add / Update / Remove vehicles  
+- Track load capacity and status  
+- Mark vehicles as “Available” or “In Service”  
 
-Note: `init_db.py` runs the schema in `schema.sql` (drops and recreates tables). Use it when you want a clean local database.
+### 📦 Smart Trip Dispatcher  
+- Assign available drivers and vehicles  
+- Prevent overloading using validation logic  
+- Lifecycle flow: Draft → Dispatched → Completed  
 
-### 3) Run the app
+### 🛠 Maintenance & Service Logs  
+- Track vehicle service records  
+- Automatically remove vehicles from dispatch pool when under maintenance  
 
-```bash
-python app.py
-```
+### ⛽ Fuel & Expense Tracking  
+- Log fuel usage per trip  
+- Calculate operational cost per vehicle  
+- Monitor cost trends  
 
-Then open: `http://127.0.0.1:5000/login`
+### 📊 Fleet Health & Risk Alerts  
+- License expiry alerts  
+- Overloading prevention  
+- Status monitoring  
+- Fleet performance indicators  
 
-## 🔑 Default Login (local)
+### 🌱 Sustainability Module  
+- Carbon emission calculation  
+- Fuel efficiency tracking  
+- Environmental impact visibility  
 
-On a fresh database, a Manager account is seeded automatically:
+---
 
-- Username: `manager`
-- Password: `manager123`
+## 🧠 What Makes Us Different  
 
-## 🧾 Registration & Approval Flow
+Unlike traditional fleet systems that only store data, SmartFleet:
 
-1. Go to `/register` (or click **Request access** on the login page)
-2. Choose an available role (Dispatcher/Safety Officer/Financial Analyst)
-3. Manager logs in → opens `/dashboard` → approves or rejects the request
-4. Pending users cannot log in until approved
+- Assists in smart operational decision-making  
+- Prevents invalid dispatch scenarios  
+- Tracks sustainability impact  
+- Improves cost visibility  
+- Enhances compliance monitoring  
 
-## ⚙️ Configuration
+We built a **Decision-Support Platform**, not just a dashboard.
 
-- `SECRET_KEY`: set a strong secret in production (defaults to a dev value)
+---
 
-Local runs (`python app.py`) use Flask defaults (host `127.0.0.1`, port `5000`). For hosting (e.g., Render), run with gunicorn and bind to the platform port, e.g.:
+## 🛠 Tech Stack  
 
-```bash
-gunicorn -b 0.0.0.0:$PORT app:app
-```
+### Frontend  
+- HTML  
+- CSS  
+- JavaScript  
 
-## 👥 Team
+### Backend  
+- Flask (Python)  
 
-Developed for GVP Hackathon
+### Authentication & Database  
+- Firebase  
+
+### Deployment  
+- Render  
+
+---
+
+## 🔮 Future Scope  
+
+- AI-based predictive maintenance  
+- Route optimization integration  
+- Real-time GPS tracking  
+- Fraud detection in fuel expenses  
+- Mobile application version  
+
+---
+
+## 🎯 Hackathon Vision  
+
+Our goal is to transform traditional fleet tracking into a smart, scalable, and sustainability-driven logistics platform for modern enterprises.
+
+---
+
+## 👥 Team  
+
+Developed for GVP Hackathon  
+
+---

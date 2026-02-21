@@ -13,11 +13,6 @@ DATABASE = BASE_DIR / "fleetflow.db"
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "fleetflow-lite-dev-secret")
 
-ASSIGNABLE_ROLES = ["Dispatcher", "Safety Officer", "Financial Analyst"]
-STATUS_PENDING = "pending"
-STATUS_APPROVED = "approved"
-STATUS_REJECTED = "rejected"
-
 
 # ------------------------
 # Database helpers
@@ -38,14 +33,21 @@ def initialize_database():
 
 
 def seed_default_users():
+    users = [
+        ("manager", generate_password_hash("manager123"), "Manager"),
+        ("dispatcher", generate_password_hash("dispatcher123"), "Dispatcher"),
+        ("safety", generate_password_hash("safety123"), "Safety Officer"),
+        ("finance", generate_password_hash("finance123"), "Financial Analyst"),
+    ]
     with get_db_connection() as conn:
-        conn.execute(
-            """
-            INSERT OR IGNORE INTO users (username, password_hash, role, status)
-            VALUES (?, ?, 'Manager', ?)
-            """,
-            ("manager", generate_password_hash("manager123"), STATUS_APPROVED),
-        )
+        for username, password_hash, role in users:
+            conn.execute(
+                """
+                INSERT OR IGNORE INTO users (username, password_hash, role)
+                VALUES (?, ?, ?)
+                """,
+                (username, password_hash, role),
+            )
         conn.commit()
 
 
@@ -79,11 +81,8 @@ def ensure_schema_updates():
                 CREATE TABLE users (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     username TEXT NOT NULL UNIQUE,
-                    name TEXT,
-                    email TEXT,
                     password_hash TEXT NOT NULL,
-                    role TEXT NOT NULL CHECK (role IN ('Manager', 'Dispatcher', 'Safety Officer', 'Financial Analyst')),
-                    status TEXT NOT NULL DEFAULT 'approved' CHECK (status IN ('pending', 'approved', 'rejected'))
+                    role TEXT NOT NULL CHECK (role IN ('Manager', 'Dispatcher', 'Safety Officer', 'Financial Analyst'))
                 )
                 """
             )
@@ -94,23 +93,6 @@ def ensure_schema_updates():
                 """
             )
             conn.execute("DROP TABLE users_old")
-
-        users_columns = {
-            column_info["name"]
-            for column_info in conn.execute("PRAGMA table_info(users)").fetchall()
-        }
-        if "name" not in users_columns:
-            conn.execute("ALTER TABLE users ADD COLUMN name TEXT")
-        if "email" not in users_columns:
-            conn.execute("ALTER TABLE users ADD COLUMN email TEXT")
-        if "status" not in users_columns:
-            conn.execute(
-                "ALTER TABLE users ADD COLUMN status TEXT NOT NULL DEFAULT 'approved'"
-            )
-
-        conn.execute(
-            "UPDATE users SET status = 'approved' WHERE status IS NULL OR TRIM(status) = ''"
-        )
 
         driver_columns = {
             column_info["name"]
@@ -134,21 +116,6 @@ def ensure_schema_updates():
             """
         )
         conn.commit()
-
-
-def get_available_roles_for_registration(conn):
-    taken = {
-        row["role"]
-        for row in conn.execute(
-            """
-            SELECT role
-            FROM users
-            WHERE role IN ('Dispatcher', 'Safety Officer', 'Financial Analyst')
-              AND status IN ('pending', 'approved')
-            """
-        ).fetchall()
-    }
-    return [role for role in ASSIGNABLE_ROLES if role not in taken]
 
 
 # ------------------------
@@ -209,105 +176,20 @@ def login():
 
         with get_db_connection() as conn:
             user = conn.execute(
-                """
-                SELECT *
-                FROM users
-                WHERE lower(username) = lower(?) OR lower(email) = lower(?)
-                """,
-                (username, username),
+                "SELECT * FROM users WHERE username = ?", (username,)
             ).fetchone()
 
-        if not user or not check_password_hash(user["password_hash"], password):
-            flash("Invalid username or password.", "error")
-            return render_template("login.html")
+        if user and check_password_hash(user["password_hash"], password):
+            session.clear()
+            session["user_id"] = user["id"]
+            session["username"] = user["username"]
+            session["role"] = user["role"]
+            flash("Logged in successfully.", "success")
+            return redirect(url_for(get_role_home_endpoint(user["role"])))
 
-        status = user["status"] if ("status" in user.keys()) else STATUS_APPROVED
-        if status == STATUS_PENDING:
-            flash("Awaiting manager approval", "error")
-            return render_template("login.html")
-        if status == STATUS_REJECTED:
-            flash("Access denied by manager", "error")
-            return render_template("login.html")
-
-        session.clear()
-        session["user_id"] = user["id"]
-        session["username"] = user["username"]
-        session["role"] = user["role"]
-        flash("Logged in successfully.", "success")
-        return redirect(url_for(get_role_home_endpoint(user["role"])))
+        flash("Invalid username or password.", "error")
 
     return render_template("login.html")
-
-
-@app.route("/register", methods=["GET", "POST"])
-def register():
-    with get_db_connection() as conn:
-        available_roles = get_available_roles_for_registration(conn)
-        all_roles_assigned = len(available_roles) == 0
-
-        if request.method == "POST":
-            if all_roles_assigned:
-                flash("All roles assigned", "error")
-                return render_template(
-                    "register.html",
-                    available_roles=available_roles,
-                    all_roles_assigned=all_roles_assigned,
-                )
-
-            name = request.form.get("name", "").strip()
-            email = request.form.get("email", "").strip().lower()
-            password = request.form.get("password", "")
-            role = request.form.get("role", "").strip()
-
-            if not all([name, email, password, role]):
-                flash("All fields are required", "error")
-                return render_template(
-                    "register.html",
-                    available_roles=available_roles,
-                    all_roles_assigned=all_roles_assigned,
-                )
-
-            if role not in available_roles:
-                flash("Selected role is not available", "error")
-                return render_template(
-                    "register.html",
-                    available_roles=available_roles,
-                    all_roles_assigned=all_roles_assigned,
-                )
-
-            # Store email as username to avoid changing the login UI/field
-            try:
-                conn.execute(
-                    """
-                    INSERT INTO users (username, name, email, password_hash, role, status)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                    """,
-                    (
-                        email,
-                        name,
-                        email,
-                        generate_password_hash(password),
-                        role,
-                        STATUS_PENDING,
-                    ),
-                )
-                conn.commit()
-                flash("Request submitted", "success")
-                return redirect(url_for("login"))
-            except sqlite3.IntegrityError:
-                conn.rollback()
-                flash("Email already registered", "error")
-                return render_template(
-                    "register.html",
-                    available_roles=get_available_roles_for_registration(conn),
-                    all_roles_assigned=(len(get_available_roles_for_registration(conn)) == 0),
-                )
-
-        return render_template(
-            "register.html",
-            available_roles=available_roles,
-            all_roles_assigned=all_roles_assigned,
-        )
 
 
 @app.route("/logout")
@@ -359,26 +241,8 @@ def dashboard():
             """
         ).fetchall()
 
-        pending_role_requests = conn.execute(
-            """
-            SELECT id, name, email, role
-            FROM users
-            WHERE status = 'pending' AND role != 'Manager'
-            ORDER BY id DESC
-            """
-        ).fetchall()
-
-        approved_role_users = conn.execute(
-            """
-            SELECT id, name, email, role
-            FROM users
-            WHERE status = 'approved' AND role IN ('Dispatcher', 'Safety Officer', 'Financial Analyst')
-            ORDER BY role
-            """
-        ).fetchall()
-
     return render_template(
-        "manager_dashboard.html",
+        "dashboard.html",
         active_fleet=active_fleet,
         in_maintenance=in_maintenance,
         available_vehicles=available_vehicles,
@@ -387,86 +251,7 @@ def dashboard():
         avg_safety_score=avg_safety_score,
         total_operational_cost=total_operational_cost,
         recent_trips=recent_trips,
-        pending_role_requests=pending_role_requests,
-        approved_role_users=approved_role_users,
     )
-
-
-@app.route("/users/<int:user_id>/approve", methods=["POST"])
-@roles_required("Manager")
-def approve_user(user_id):
-    with get_db_connection() as conn:
-        user = conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
-        if not user:
-            flash("Request not found", "error")
-            return redirect(url_for("dashboard"))
-        if user["role"] == "Manager":
-            flash("Cannot approve manager role", "error")
-            return redirect(url_for("dashboard"))
-        if user["status"] != STATUS_PENDING:
-            flash("Request is not pending", "error")
-            return redirect(url_for("dashboard"))
-
-        # Only one user per role (treat pending+approved as occupying the role)
-        conflict = conn.execute(
-            """
-            SELECT 1 FROM users
-            WHERE role = ? AND status IN ('pending', 'approved') AND id != ?
-            LIMIT 1
-            """,
-            (user["role"], user_id),
-        ).fetchone()
-        if conflict:
-            flash("Role already assigned", "error")
-            return redirect(url_for("dashboard"))
-
-        conn.execute("UPDATE users SET status = ? WHERE id = ?", (STATUS_APPROVED, user_id))
-        conn.commit()
-        flash("User approved", "success")
-        return redirect(url_for("dashboard"))
-
-
-@app.route("/users/<int:user_id>/reject", methods=["POST"])
-@roles_required("Manager")
-def reject_user(user_id):
-    with get_db_connection() as conn:
-        user = conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
-        if not user:
-            flash("Request not found", "error")
-            return redirect(url_for("dashboard"))
-        if user["role"] == "Manager":
-            flash("Cannot reject manager role", "error")
-            return redirect(url_for("dashboard"))
-        if user["status"] != STATUS_PENDING:
-            flash("Request is not pending", "error")
-            return redirect(url_for("dashboard"))
-
-        conn.execute("UPDATE users SET status = ? WHERE id = ?", (STATUS_REJECTED, user_id))
-        conn.commit()
-        flash("User rejected", "success")
-        return redirect(url_for("dashboard"))
-
-
-@app.route("/users/<int:user_id>/delete", methods=["POST"])
-@roles_required("Manager")
-def delete_user(user_id):
-    if session.get("user_id") == user_id:
-        flash("Manager cannot delete self", "error")
-        return redirect(url_for("dashboard"))
-
-    with get_db_connection() as conn:
-        user = conn.execute("SELECT id, role FROM users WHERE id = ?", (user_id,)).fetchone()
-        if not user:
-            flash("User not found", "error")
-            return redirect(url_for("dashboard"))
-        if user["role"] == "Manager":
-            flash("Manager cannot be removed", "error")
-            return redirect(url_for("dashboard"))
-
-        conn.execute("DELETE FROM users WHERE id = ?", (user_id,))
-        conn.commit()
-        flash("User removed", "success")
-        return redirect(url_for("dashboard"))
 
 
 @app.route("/vehicles", methods=["GET", "POST"])
