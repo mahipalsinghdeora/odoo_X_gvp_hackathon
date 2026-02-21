@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="topbar">
+    <h1>Edit Driver #{{ driver.id }}</h1>
+</div>
+
+<div class="form-card">
+    <form method="post" class="form-grid">
+        <div class="input-group">
+            <label>Name</label>
+            <input type="text" name="name" value="{{ driver.name }}" required>
+        </div>
+        <div class="input-group">
+            <label>License Number</label>
+            <input type="text" name="license_number" value="{{ driver.license_number }}" required>
+        </div>
+        <div class="input-group">
+            <label>License Expiry Date</label>
+            <input type="date" name="license_expiry_date" value="{{ driver.license_expiry_date }}" required>
+        </div>
+        <div class="input-group">
+            <label>Status</label>
+            <select name="status" required>
+                <option value="Available" {% if driver.status == 'Available' %}selected{% endif %}>Available</option>
+                <option value="On Trip" {% if driver.status == 'On Trip' %}selected{% endif %}>On Trip</option>
+                <option value="Suspended" {% if driver.status == 'Suspended' %}selected{% endif %}>Suspended</option>
+            </select>
+        </div>
+        <div class="input-group justify-end">
+            <label>&nbsp;</label>
+            <button type="submit">Save Changes</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

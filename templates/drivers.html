@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="topbar">
+    <h1>Driver Management</h1>
+</div>
+
+{% if session.get('role') == 'Manager' %}
+<div class="form-card">
+    <h3>Add Driver</h3>
+    <form method="post" class="form-grid mt-10">
+        <div class="input-group">
+            <label>Name</label>
+            <input type="text" name="name" required>
+        </div>
+        <div class="input-group">
+            <label>License Number</label>
+            <input type="text" name="license_number" required>
+        </div>
+        <div class="input-group">
+            <label>License Expiry Date</label>
+            <input type="date" name="license_expiry_date" required>
+        </div>
+        <div class="input-group">
+            <label>Status</label>
+            <select name="status" required>
+                <option>Available</option>
+                <option>On Trip</option>
+                <option>Suspended</option>
+            </select>
+        </div>
+        <div class="input-group justify-end">
+            <label>&nbsp;</label>
+            <button type="submit">Create Driver</button>
+        </div>
+    </form>
+</div>
+{% endif %}
+
+<div class="table-wrap">
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>License #</th>
+            <th>Expiry</th>
+            <th>Status</th>
+            {% if session.get('role') == 'Manager' %}<th>Actions</th>{% endif %}
+        </tr>
+        </thead>
+        <tbody>
+        {% for driver in drivers %}
+            <tr>
+                <td>#{{ driver.id }}</td>
+                <td>{{ driver.name }}</td>
+                <td>{{ driver.license_number }}</td>
+                <td>{{ driver.license_expiry_date }}</td>
+                <td><span class="badge status-{{ driver.status|lower|replace(' ', '-') }}">{{ driver.status }}</span></td>
+                {% if session.get('role') == 'Manager' %}
+                <td>
+                    <div class="inline-actions">
+                        <a href="{{ url_for('edit_driver', driver_id=driver.id) }}"><button type="button" class="secondary">Edit</button></a>
+                        <form method="post" action="{{ url_for('delete_driver', driver_id=driver.id) }}" class="confirm-delete">
+                            <button class="danger" type="submit">Delete</button>
+                        </form>
+                    </div>
+                </td>
+                {% endif %}
+            </tr>
+        {% else %}
+            <tr><td colspan="6">No drivers found.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

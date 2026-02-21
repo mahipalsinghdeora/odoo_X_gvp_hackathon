@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="topbar">
+    <div>
+        <h1>Fleet Overview</h1>
+        <p class="page-subtitle">Monitor operations, compliance, and dispatch health in one place.</p>
+    </div>
+</div>
+
+<div class="grid-4">
+    <div class="card metric-card metric-card-highlight">
+        <div class="metric-head"><span class="metric-icon">▲</span><span>Active Fleet</span></div>
+        <div class="metric-value">{{ active_fleet }}</div>
+    </div>
+    <div class="card metric-card">
+        <div class="metric-head"><span class="metric-icon">■</span><span>Vehicles In Maintenance</span></div>
+        <div class="metric-value">{{ in_maintenance }}</div>
+    </div>
+    <div class="card metric-card">
+        <div class="metric-head"><span class="metric-icon">●</span><span>Available Vehicles</span></div>
+        <div class="metric-value">{{ available_vehicles }}</div>
+    </div>
+    <div class="card metric-card">
+        <div class="metric-head"><span class="metric-icon">◆</span><span>Pending Trips</span></div>
+        <div class="metric-value">{{ pending_trips }}</div>
+    </div>
+    <div class="card metric-card">
+        <div class="metric-head"><span class="metric-icon">!</span><span>Expired Licenses</span></div>
+        <div class="metric-value">{{ expired_licenses }}</div>
+    </div>
+    <div class="card metric-card">
+        <div class="metric-head"><span class="metric-icon">✓</span><span>Average Safety Score</span></div>
+        <div class="metric-value">{{ avg_safety_score }}</div>
+    </div>
+    <div class="card metric-card">
+        <div class="metric-head"><span class="metric-icon">$</span><span>Total Operational Cost</span></div>
+        <div class="metric-value">{{ total_operational_cost }}</div>
+    </div>
+</div>
+
+{% set fleet_total = active_fleet + in_maintenance + available_vehicles %}
+{% if fleet_total == 0 %}
+    {% set fleet_total = 1 %}
+{% endif %}
+{% set available_percent = (available_vehicles * 100 / fleet_total)|round|int %}
+{% set active_percent = (active_fleet * 100 / fleet_total)|round|int %}
+{% set maintenance_percent = (in_maintenance * 100 / fleet_total)|round|int %}
+
+<div class="row">
+    <div class="card analytics-card">
+        <div class="analytics-head">Fleet Distribution</div>
+        <div class="analytics-body">
+            <div class="progress-ring">
+                <div class="progress-ring-center">
+                    <div class="progress-ring-value">{{ available_percent }}%</div>
+                    <div class="progress-ring-label">Available</div>
+                </div>
+            </div>
+            <div class="progress-list">
+                <div class="progress-item">
+                    <div class="progress-title"><span>Active Fleet</span><span>{{ active_percent }}%</span></div>
+                    <progress class="progress-native active" value="{{ active_percent }}" max="100"></progress>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-title"><span>In Maintenance</span><span>{{ maintenance_percent }}%</span></div>
+                    <progress class="progress-native maintenance" value="{{ maintenance_percent }}" max="100"></progress>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-title"><span>Available Vehicles</span><span>{{ available_percent }}%</span></div>
+                    <progress class="progress-native available" value="{{ available_percent }}" max="100"></progress>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card analytics-card">
+        <div class="analytics-head">Operational Snapshot</div>
+        <div class="insight-list">
+            <div class="insight-item">
+                <span>Pending Trips</span>
+                <strong>{{ pending_trips }}</strong>
+            </div>
+            <div class="insight-item">
+                <span>Expired Licenses</span>
+                <strong>{{ expired_licenses }}</strong>
+            </div>
+            <div class="insight-item">
+                <span>Average Safety Score</span>
+                <strong>{{ avg_safety_score }}</strong>
+            </div>
+            <div class="insight-item">
+                <span>Total Fleet Units</span>
+                <strong>{{ active_fleet + in_maintenance + available_vehicles }}</strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="table-wrap mt-14">
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Origin</th>
+            <th>Destination</th>
+            <th>Vehicle</th>
+            <th>Driver</th>
+            <th>Status</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for trip in recent_trips %}
+            <tr>
+                <td>#{{ trip.id }}</td>
+                <td>{{ trip.origin }}</td>
+                <td>{{ trip.destination }}</td>
+                <td>{{ trip.license_plate }}</td>
+                <td>{{ trip.driver_name }}</td>
+                <td><span class="badge status-{{ trip.status|lower|replace(' ', '-') }}">{{ trip.status }}</span></td>
+            </tr>
+        {% else %}
+            <tr><td colspan="6">No trips yet.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FleetFlow Lite</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .beta-ribbon {
+            position: fixed;
+            right: 14px;
+            bottom: 14px;
+            z-index: 999;
+            background: rgba(17, 24, 39, 0.72);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 999px;
+            padding: 8px 12px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            backdrop-filter: blur(6px);
+        }
+    </style>
+</head>
+<body>
+{% if session.get('user_id') %}
+<div class="app-shell">
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <span class="sidebar-brand-dot"></span>
+            <h2>FleetFlow</h2>
+        </div>
+        <div class="role">{{ session.get('username') }} · {{ session.get('role') }}</div>
+        {% if session.get('role') == 'Manager' %}
+        <a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}"><span class="nav-icon">D</span><span class="nav-text">Dashboard</span></a>
+        <a class="nav-link {% if request.endpoint in ['vehicles', 'edit_vehicle'] %}active{% endif %}" href="{{ url_for('vehicles') }}"><span class="nav-icon">V</span><span class="nav-text">Vehicles</span></a>
+        <a class="nav-link {% if request.endpoint in ['drivers', 'edit_driver'] %}active{% endif %}" href="{{ url_for('drivers') }}"><span class="nav-icon">R</span><span class="nav-text">Drivers</span></a>
+        <a class="nav-link {% if request.endpoint in ['maintenance'] %}active{% endif %}" href="{{ url_for('maintenance') }}"><span class="nav-icon">M</span><span class="nav-text">Maintenance</span></a>
+        {% endif %}
+        {% if session.get('role') == 'Dispatcher' %}
+        <a class="nav-link {% if request.endpoint in ['drivers'] %}active{% endif %}" href="{{ url_for('drivers') }}"><span class="nav-icon">R</span><span class="nav-text">Drivers</span></a>
+        <a class="nav-link {% if request.endpoint in ['trips'] %}active{% endif %}" href="{{ url_for('trips') }}"><span class="nav-icon">T</span><span class="nav-text">Trips</span></a>
+        {% endif %}
+        {% if session.get('role') == 'Safety Officer' %}
+        <a class="nav-link {% if request.endpoint in ['drivers'] %}active{% endif %}" href="{{ url_for('drivers') }}"><span class="nav-icon">R</span><span class="nav-text">Drivers</span></a>
+        <a class="nav-link {% if request.endpoint in ['safety_dashboard'] %}active{% endif %}" href="{{ url_for('safety_dashboard') }}"><span class="nav-icon">S</span><span class="nav-text">Safety Dashboard</span></a>
+        <a class="nav-link {% if request.endpoint in ['safety_drivers'] %}active{% endif %}" href="{{ url_for('safety_drivers') }}"><span class="nav-icon">C</span><span class="nav-text">Driver Compliance</span></a>
+        {% endif %}
+        {% if session.get('role') == 'Financial Analyst' %}
+        <a class="nav-link {% if request.endpoint in ['drivers'] %}active{% endif %}" href="{{ url_for('drivers') }}"><span class="nav-icon">R</span><span class="nav-text">Drivers</span></a>
+        <a class="nav-link {% if request.endpoint in ['financial_dashboard'] %}active{% endif %}" href="{{ url_for('financial_dashboard') }}"><span class="nav-icon">F</span><span class="nav-text">Financial Dashboard</span></a>
+        {% endif %}
+        <a class="nav-link" href="{{ url_for('logout') }}"><span class="nav-icon">L</span><span class="nav-text">Logout</span></a>
+    </aside>
+    <main class="content">
+        <div class="content-topbar">
+            <div class="content-topbar-left">
+                <div class="layout-topbar">
+                    <button type="button" id="sidebarToggle" class="sidebar-toggle" aria-label="Toggle Sidebar">☰</button>
+                </div>
+                <span>Dashboard Workspace</span>
+            </div>
+            <div class="content-topbar-right">
+                <div class="topbar-search-wrap">
+                    <input class="topbar-search" type="text" placeholder="Search anything...">
+                </div>
+                <span class="role-badge">{{ session.get('role') }}</span>
+                {% set uname = session.get('username') or 'U' %}
+                <span class="avatar-pill">{{ uname[0]|upper }}</span>
+            </div>
+        </div>
+        <div class="flash-wrap">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+        {% block content %}{% endblock %}
+    </main>
+</div>
+{% else %}
+{% block auth_content %}{% endblock %}
+{% endif %}
+
+<div class="beta-ribbon">Beta Version – Hackathon Prototype</div>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

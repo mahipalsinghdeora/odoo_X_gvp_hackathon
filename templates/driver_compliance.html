@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="topbar">
+    <h1>Driver Compliance Management</h1>
+</div>
+
+<div class="table-wrap">
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>License #</th>
+            <th>License Status</th>
+            <th>Completed Trips</th>
+            <th>Safety Score</th>
+            <th>Driver Status</th>
+            <th>Update</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for driver in drivers %}
+            <tr>
+                <td>#{{ driver.id }}</td>
+                <td>{{ driver.name }}</td>
+                <td>{{ driver.license_number }}</td>
+                <td>
+                    {% if driver.is_expired %}
+                        <span class="badge status-expired">Expired</span>
+                    {% else %}
+                        <span class="badge status-available">Valid</span>
+                    {% endif %}
+                </td>
+                <td>{{ driver.completed_trip_count }}</td>
+                <td>
+                    {% if driver.safety_score >= 80 %}
+                        <span class="badge status-high-safety-score">{{ driver.safety_score }} · High Safety Score</span>
+                    {% else %}
+                        <span class="badge status-low-safety-score">{{ driver.safety_score }} · Low Safety Score</span>
+                    {% endif %}
+                </td>
+                <td><span class="badge status-{{ driver.status|lower|replace(' ', '-') }}">{{ driver.status }}</span></td>
+                <td>
+                    <form method="post" action="{{ url_for('safety_update_driver', driver_id=driver.id) }}" class="inline-actions">
+                        <input type="number" name="safety_score" min="0" max="100" value="{{ driver.safety_score }}" required class="w-88">
+                        <select name="status" required>
+                            <option value="Available" {% if driver.status == 'Available' %}selected{% endif %}>Available</option>
+                            <option value="Suspended" {% if driver.status == 'Suspended' %}selected{% endif %}>Suspended</option>
+                        </select>
+                        <button type="submit" class="secondary">Save</button>
+                    </form>
+                </td>
+            </tr>
+        {% else %}
+            <tr><td colspan="8">No drivers found.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

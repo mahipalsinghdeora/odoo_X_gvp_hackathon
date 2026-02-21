@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block auth_content %}
+<div class="login-shell">
+    <div class="login-card">
+        <h2>FleetFlow Lite Login</h2>
+
+        <div class="flash-wrap">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <form method="post">
+            <div class="input-group">
+                <label>Username</label>
+                <input type="text" name="username" required>
+            </div>
+            <div class="input-group mt-10">
+                <label>Password</label>
+                <input type="password" name="password" required>
+            </div>
+            <button type="submit" class="mt-14 w-full">Login</button>
+        </form>
+
+        <div class="mt-14" style="text-align:center;">
+            <a href="{{ url_for('register') }}">Not registered? Request access</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

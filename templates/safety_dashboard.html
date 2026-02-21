@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="topbar">
+    <h1>Safety Dashboard</h1>
+</div>
+
+<div class="grid-4">
+    <div class="card">
+        <div>Expired Licenses</div>
+        <div class="metric-value">{{ expired_licenses }}</div>
+        <span class="badge status-expired">Expired</span>
+    </div>
+    <div class="card">
+        <div>Suspended Drivers</div>
+        <div class="metric-value">{{ suspended_drivers }}</div>
+        <span class="badge status-suspended">Suspended</span>
+    </div>
+    <div class="card">
+        <div>Average Safety Score</div>
+        <div class="metric-value">{{ avg_safety_score }}</div>
+        {% if avg_safety_score >= 80 %}
+            <span class="badge status-high-safety-score">High Safety Score</span>
+        {% else %}
+            <span class="badge status-low-safety-score">Low Safety Score</span>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
