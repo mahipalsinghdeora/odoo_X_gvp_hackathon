@@ -5,6 +5,15 @@
     <div class="login-card">
         <h2>FleetFlow Lite Login</h2>
 
+        <details class="mt-10">
+            <summary>Initial credentials</summary>
+            <div class="mt-10" style="text-align:left;">
+                <div><strong>Manager</strong></div>
+                <div>Username: <code>manager</code></div>
+                <div>Password: <code>manager123</code></div>
+            </div>
+        </details>
+        
         <div class="flash-wrap">
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}

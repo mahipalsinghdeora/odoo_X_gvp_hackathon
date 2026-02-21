@@ -1,86 +1,367 @@
-# 🚛 SmartFleet (FleetFlow Lite) – Intelligent Fleet & Logistics Management System
 
-SmartFleet is a modular web-based fleet & logistics management system with role-based access, operational dashboards, and a lightweight decision-support workflow.
+# 🚛 FleetFlow Lite
 
-## 🌐 Live Demo
+## Intelligent Fleet & Logistics Management Platform
 
-👉 **[Launch SmartFleet Application](https://odoo-x-gvp-hackathon.onrender.com/login)**
+FleetFlow Lite is a modular, role-based fleet and logistics management system designed to replace manual fleet logbooks with a centralized, rule-driven digital platform.
 
-## 🚀 Core Features
+It provides structured dispatch workflows, compliance monitoring, maintenance tracking, and financial oversight within a controlled access environment.
 
-### 🔐 Role-based access + approval workflow
-- Roles: **Manager**, **Dispatcher**, **Safety Officer**, **Financial Analyst**
-- Only **one user per non-manager role** (Dispatcher/Safety Officer/Financial Analyst)
-- Self-registration is available for non-manager roles via **Request access**
-- New registrations are created with status **pending** and must be **approved by the Manager** before login is allowed
+---
 
-### 🚗 Vehicle Registry
-- Create and track vehicles (capacity, status, odometer)
+# 🌐 Live Application
 
-### 📦 Trip Dispatcher
-- Create trips and enforce basic validation (e.g., cargo weight)
+👉 **[Click Here !!!](https://odoo-x-gvp-hackathon.onrender.com/login)**
 
-### 🛠 Maintenance & ⛽ Fuel logs
-- Track maintenance and fuel records
+---
 
-### 📊 Dashboards
-- Manager dashboard includes fleet counts, cost rollups, and role-requests management
+# 🎯 Problem Statement
 
-## 🛠 Tech Stack
+Many small and mid-sized fleet operators rely on spreadsheets and disconnected logs to manage:
 
-- Frontend: HTML, CSS, JavaScript
-- Backend: Flask (Python)
-- Database: SQLite (file-based, stored as `fleetflow.db` in the project folder)
-- Deployment: Render (supports `gunicorn`)
+* Vehicle availability
+* Driver compliance
+* Trip assignments
+* Maintenance tracking
+* Fuel and operational costs
 
-## 🧰 Local Setup
+This results in:
 
-### 1) Install dependencies
+* Lack of real-time visibility
+* Dispatch errors
+* Compliance risks
+* Poor cost control
+
+FleetFlow Lite solves this by introducing centralized role-based management, operational dashboards, and validation-driven workflows.
+
+---
+
+# 🔐 Role-Based Architecture
+
+FleetFlow Lite enforces strict Role-Based Access Control (RBAC).
+
+## Supported Roles
+
+* **Fleet Manager**
+* **Dispatcher**
+* **Safety Officer**
+* **Financial Analyst**
+
+### Role Constraints
+
+* Only **one active user per non-manager role**
+
+  * Dispatcher
+  * Safety Officer
+  * Financial Analyst
+* Manager account is pre-seeded (prototype mode)
+* Non-manager roles require Manager approval
+* Duplicate role assignment is restricted
+
+This ensures structured organizational control.
+
+---
+---
+
+# 👥 Role Responsibilities & Permissions
+
+FleetFlow Lite operates on a structured single-company governance model where each role has clearly defined operational boundaries and responsibilities.
+
+---
+
+## 🟢 Fleet Manager (Administrative Control Layer)
+
+The Fleet Manager is the central authority of the system and oversees overall fleet operations.
+
+### Responsibilities:
+
+- Approve or reject new role registration requests
+- Remove existing role users (Dispatcher, Safety Officer, Financial Analyst)
+- Add, update, and retire vehicles
+- Log maintenance activities
+- View complete fleet dashboard and operational metrics
+- Maintain structural control of the organization
+
+### System Privileges:
+
+- Full access to all modules
+- User approval and removal authority
+- Cannot be self-registered (pre-seeded prototype account)
+
+The Manager ensures governance, accountability, and system integrity.
+
+---
+
+## 🟡 Dispatcher (Operational Execution Layer)
+
+The Dispatcher manages daily logistics and trip execution.
+
+### Responsibilities:
+
+- Create new trips
+- Assign available vehicles and approved drivers
+- Monitor and update trip lifecycle (Draft → Dispatched → Completed)
+- Ensure operational readiness before dispatch
+
+### System Constraints:
+
+- Cannot approve users
+- Cannot access financial analytics
+- Cannot modify vehicle registry directly
+- Cannot override compliance restrictions
+
+The Dispatcher ensures cargo movement follows validated operational workflows.
+
+---
+
+## 🔵 Safety Officer (Compliance & Risk Control Layer)
+
+The Safety Officer maintains driver compliance and regulatory safety standards.
+
+### Responsibilities:
+
+- Monitor driver license validity
+- Update driver safety status
+- Suspend or reactivate drivers
+- Prevent assignment of non-compliant drivers
+
+### System Constraints:
+
+- Cannot dispatch trips
+- Cannot modify financial records
+- Cannot manage vehicle registry
+
+The Safety Officer safeguards operational compliance and risk management.
+
+---
+
+## 🟣 Financial Analyst (Cost & Performance Monitoring Layer)
+
+The Financial Analyst oversees cost tracking and financial transparency.
+
+### Responsibilities:
+
+- Record fuel logs
+- Review maintenance expenses
+- Monitor vehicle-level operational costs
+- Analyze financial summaries from dashboard
+
+### System Constraints:
+
+- Cannot dispatch trips
+- Cannot manage drivers
+- Cannot approve user requests
+
+The Financial Analyst ensures financial visibility and cost accountability.
+
+---
+
+## 🏢 Governance Model Summary
+
+FleetFlow Lite enforces structured governance:
+
+- One Fleet Manager (pre-seeded prototype)
+- One Dispatcher
+- One Safety Officer
+- One Financial Analyst
+- Registration requires Manager approval
+- Duplicate role assignment is restricted
+
+This design ensures:
+
+✔ Clear separation of duties  
+✔ Controlled system access  
+✔ Operational accountability  
+✔ Business-rule enforcement  
+
+---
+
+# 👤 Authentication & Approval Workflow
+
+## Manager (Prototype Initialization)
+
+On a fresh database, a default Manager account is automatically created for demonstration purposes:
+
+* Username: `manager`
+* Password: `manager123`
+
+This account is intended for prototype demonstration during evaluation.
+
+---
+
+## Registration & Approval Process
+
+1. User clicks **Request Access** on login page
+2. Only unassigned roles appear in dropdown
+3. User submits request
+4. Account status is set to **Pending**
+5. Manager reviews requests in dashboard
+6. Manager can:
+
+   * Approve → Access granted
+   * Reject → Access permanently denied
+
+Pending users cannot log in until approved.
+
+---
+
+# 🚗 Core Modules
+
+## 1️⃣ Vehicle Registry
+
+* Add and manage fleet vehicles
+* Track load capacity, odometer, status
+* Automated state transitions (Available / On Trip / In Shop)
+
+---
+
+## 2️⃣ Trip Dispatch & Validation
+
+* Assign driver and vehicle
+* Business rule enforcement:
+
+  * Cargo ≤ Vehicle Capacity
+  * Driver must be approved
+  * Vehicle must not be in maintenance
+* Trip lifecycle:
+
+  * Draft → Dispatched → Completed
+
+---
+
+## 3️⃣ Driver Compliance (Safety Officer)
+
+* Monitor license validity
+* Update compliance status
+* Suspend/reactivate drivers
+
+---
+
+## 4️⃣ Maintenance Management
+
+* Log service events
+* Automatically mark vehicle as “In Shop”
+* Prevent dispatch during maintenance
+
+---
+
+## 5️⃣ Fuel & Financial Tracking
+
+* Record fuel consumption
+* Aggregate operational costs
+* Provide cost-level visibility per vehicle
+
+---
+
+# 📊 Dashboard Capabilities
+
+Manager Dashboard includes:
+
+* Fleet status overview
+* Role request management
+* Operational cost summaries
+* Trip metrics and tracking
+
+Each role sees a restricted dashboard relevant to their responsibilities.
+
+---
+
+# 🛠 Technology Stack
+
+| Layer             | Technology            |
+| ----------------- | --------------------- |
+| Backend           | Flask (Python)        |
+| Frontend          | HTML, CSS, JavaScript |
+| Database          | SQLite                |
+| Production Server | Gunicorn              |
+| Hosting           | Render                |
+
+---
+
+# 🧰 Local Setup Guide
+
+## 1️⃣ Clone Repository
+
+```bash
+git clone https://github.com/mahipalsinghdeora/odoo_X_gvp_hackathon.git
+cd odoo_X_gvp_hackathon
+```
+
+---
+
+## 2️⃣ Install Dependencies
 
 ```bash
 python -m pip install -r requirements.txt
 ```
 
-### 2) Initialize/reset the database (optional)
+---
+
+## 3️⃣ Initialize Database (Optional Reset)
 
 ```bash
 python init_db.py
 ```
 
-Note: `init_db.py` runs the schema in `schema.sql` (drops and recreates tables). Use it when you want a clean local database.
+This recreates database tables using `schema.sql`.
 
-### 3) Run the app
+---
+
+## 4️⃣ Run Application
 
 ```bash
 python app.py
 ```
 
-Then open: `http://127.0.0.1:5000/login`
+Open in browser:
 
-## 🔑 Default Login (local)
+```
+http://127.0.0.1:5000/login
+```
 
-On a fresh database, a Manager account is seeded automatically:
+---
 
-- Username: `manager`
-- Password: `manager123`
+# 🚀 Production Deployment (Render)
 
-## 🧾 Registration & Approval Flow
-
-1. Go to `/register` (or click **Request access** on the login page)
-2. Choose an available role (Dispatcher/Safety Officer/Financial Analyst)
-3. Manager logs in → opens `/dashboard` → approves or rejects the request
-4. Pending users cannot log in until approved
-
-## ⚙️ Configuration
-
-- `SECRET_KEY`: set a strong secret in production (defaults to a dev value)
-
-Local runs (`python app.py`) use Flask defaults (host `127.0.0.1`, port `5000`). For hosting (e.g., Render), run with gunicorn and bind to the platform port, e.g.:
+Start command:
 
 ```bash
 gunicorn -b 0.0.0.0:$PORT app:app
 ```
 
-## 👥 Team
+Set environment variable:
 
-Developed for GVP Hackathon
+```
+SECRET_KEY=<strong_random_key>
+```
+
+---
+
+# 🔒 Security Features
+
+* Session-based authentication
+* Role-restricted routes
+* Approval-controlled registration
+* Business-rule enforcement
+* SQLite foreign key integrity
+
+---
+
+# 📌 Project Scope
+
+FleetFlow Lite was developed as a structured prototype for hackathon evaluation, demonstrating:
+
+* Centralized fleet management
+* Controlled access workflows
+* Validation-driven dispatch
+* Compliance monitoring
+* Cost tracking capabilities
+
+---
+
+# 👥 Team
+
+Developed for Hackathon Submission
+FleetFlow Lite – 2026
+
+---
