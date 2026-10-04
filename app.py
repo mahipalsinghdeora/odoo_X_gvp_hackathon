@@ -3,8 +3,10 @@ from functools import wraps
 from pathlib import Path
 import os
 import sqlite3
+import time
+import zlib
 
-from flask import Flask, flash, g, redirect, render_template, request, session, url_for
+from flask import Flask, flash, g, jsonify, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -421,6 +423,67 @@ def intelligence():
         "fuel": [dict(r) for r in fuel_rows],
     }
     return render_template("intelligence.html", fleet_data=fleet_data)
+
+
+def _fleet_rows():
+    with get_db_connection() as conn:
+        vehicles = conn.execute(
+            "SELECT id, model_name, license_plate, max_capacity_kg, odometer, status FROM vehicles"
+        ).fetchall()
+        drivers = conn.execute(
+            "SELECT id, name, license_number, license_expiry_date, status, safety_score FROM drivers"
+        ).fetchall()
+        trips = conn.execute(
+            """SELECT id, vehicle_id, driver_id, cargo_weight, origin, destination, status, created_at
+               FROM trips ORDER BY id DESC"""
+        ).fetchall()
+        maintenance = conn.execute(
+            "SELECT vehicle_id, description, cost, date FROM maintenance_logs ORDER BY date DESC"
+        ).fetchall()
+        fuel = conn.execute(
+            "SELECT vehicle_id, liters, cost, date FROM fuel_logs ORDER BY date DESC"
+        ).fetchall()
+    return vehicles, drivers, trips, maintenance, fuel
+
+
+@app.route("/api/fleet/data")
+@login_required
+def api_fleet_data():
+    """Live fleet snapshot: same shape as the page data, plus simulated live positions."""
+    vehicles, drivers, trips, maintenance, fuel = _fleet_rows()
+    now = time.time()
+
+    def h(text):
+        return zlib.crc32(str(text).encode("utf-8"))
+
+    enriched = []
+    for row in vehicles:
+        v = dict(row)
+        vid = v["id"]
+        if v["status"] == "On Trip":
+            x1, y1 = 40 + (h(f"{vid}a") % 560), 40 + (h(f"{vid}b") % 280)
+            x2, y2 = 40 + (h(f"{vid}c") % 560), 40 + (h(f"{vid}d") % 280)
+            cycle = ((now / 90.0) + (vid * 0.17)) % 2
+            t = cycle if cycle < 1 else 2 - cycle
+            v["x"] = round(x1 + (x2 - x1) * t, 1)
+            v["y"] = round(y1 + (y2 - y1) * t, 1)
+            v["route"] = {"x1": x1, "y1": y1, "x2": x2, "y2": y2}
+        elif v["status"] == "In Shop":
+            v["x"], v["y"] = 615, 327
+        else:
+            v["x"], v["y"] = 80 + (h(v["license_plate"]) % 160), 60 + (h(v["model_name"] + str(vid)) % 220)
+        active = next((t for t in trips if t["vehicle_id"] == vid and t["status"] == "Dispatched"), None)
+        v["active_trip"] = dict(active) if active else None
+        enriched.append(v)
+
+    return jsonify({
+        "server_time": now,
+        "vehicles": enriched,
+        "drivers": [dict(r) for r in drivers],
+        "trips": [dict(r) for r in trips],
+        "maintenance": [dict(r) for r in maintenance],
+        "fuel": [dict(r) for r in fuel],
+    })
 
 
 @app.route("/users/<int:user_id>/approve", methods=["POST"])

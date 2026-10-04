@@ -24,6 +24,10 @@
     .span-2 { grid-column: span 1; }
 }
 
+.vehicle-marker {
+    transition: transform 2.6s linear;
+}
+
 .live-dot {
     display: inline-block;
     width: 9px;
