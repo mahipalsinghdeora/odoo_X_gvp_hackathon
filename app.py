@@ -392,6 +392,37 @@ def dashboard():
     )
 
 
+@app.route("/intelligence")
+@login_required
+def intelligence():
+    with get_db_connection() as conn:
+        vehicles_rows = conn.execute(
+            "SELECT id, model_name, license_plate, max_capacity_kg, odometer, status FROM vehicles"
+        ).fetchall()
+        drivers_rows = conn.execute(
+            "SELECT id, name, license_number, license_expiry_date, status, safety_score FROM drivers"
+        ).fetchall()
+        trips_rows = conn.execute(
+            """SELECT id, vehicle_id, driver_id, cargo_weight, origin, destination, status, created_at
+               FROM trips ORDER BY id DESC"""
+        ).fetchall()
+        maintenance_rows = conn.execute(
+            "SELECT vehicle_id, description, cost, date FROM maintenance_logs ORDER BY date DESC"
+        ).fetchall()
+        fuel_rows = conn.execute(
+            "SELECT vehicle_id, liters, cost, date FROM fuel_logs ORDER BY date DESC"
+        ).fetchall()
+
+    fleet_data = {
+        "vehicles": [dict(r) for r in vehicles_rows],
+        "drivers": [dict(r) for r in drivers_rows],
+        "trips": [dict(r) for r in trips_rows],
+        "maintenance": [dict(r) for r in maintenance_rows],
+        "fuel": [dict(r) for r in fuel_rows],
+    }
+    return render_template("intelligence.html", fleet_data=fleet_data)
+
+
 @app.route("/users/<int:user_id>/approve", methods=["POST"])
 @roles_required("Manager")
 def approve_user(user_id):

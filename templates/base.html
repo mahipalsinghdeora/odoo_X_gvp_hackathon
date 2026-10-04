@@ -54,6 +54,7 @@
         <a class="nav-link {% if request.endpoint in ['drivers'] %}active{% endif %}" href="{{ url_for('drivers') }}"><span class="nav-icon">R</span><span class="nav-text">Drivers</span></a>
         <a class="nav-link {% if request.endpoint in ['financial_dashboard'] %}active{% endif %}" href="{{ url_for('financial_dashboard') }}"><span class="nav-icon">F</span><span class="nav-text">Financial Dashboard</span></a>
         {% endif %}
+        <a class="nav-link {% if request.endpoint == 'intelligence' %}active{% endif %}" href="{{ url_for('intelligence') }}"><span class="nav-icon">I</span><span class="nav-text">Intelligence Hub</span></a>
         <a class="nav-link" href="{{ url_for('logout') }}"><span class="nav-icon">L</span><span class="nav-text">Logout</span></a>
     </aside>
     <main class="content">

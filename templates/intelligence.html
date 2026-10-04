@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/intelligence.css') }}">
+
+<div class="topbar">
+    <div>
+        <h1>Fleet Intelligence Hub</h1>
+        <p class="page-subtitle">Real-time tracking, predictive insights, and AI-assisted decisions powered by your fleet data.</p>
+    </div>
+</div>
+
+<div class="grid-4" id="intelKpis"></div>
+
+<div class="intel-grid">
+    <div class="card intel-card span-2">
+        <h3>Live Vehicle Tracking <span class="live-dot"></span></h3>
+        <div class="track-wrap">
+            <svg id="trackMap" viewBox="0 0 640 360" preserveAspectRatio="xMidYMid meet"></svg>
+            <div class="track-side">
+                <div id="trackList"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card intel-card">
+        <h3>Route Optimization</h3>
+        <div class="form-row">
+            <input id="routeFrom" list="cityList" placeholder="Origin">
+            <input id="routeTo" list="cityList" placeholder="Destination">
+            <datalist id="cityList"></datalist>
+            <button class="btn" id="routeBtn">Optimize</button>
+        </div>
+        <svg id="routeMap" viewBox="0 0 640 220"></svg>
+        <div id="routeResult" class="mini-list"></div>
+    </div>
+
+    <div class="card intel-card">
+        <h3>Fuel Efficiency Analysis</h3>
+        <canvas id="fuelChart" height="220"></canvas>
+        <div id="fuelInsights" class="mini-list"></div>
+    </div>
+
+    <div class="card intel-card">
+        <h3>Predictive Maintenance</h3>
+        <div id="predMaint"></div>
+    </div>
+
+    <div class="card intel-card">
+        <h3>Driver Performance Scoring</h3>
+        <div id="driverScores"></div>
+    </div>
+
+    <div class="card intel-card">
+        <h3>Automated Compliance Alerts</h3>
+        <div id="alerts"></div>
+    </div>
+
+    <div class="card intel-card">
+        <h3>Trip Delay Prediction</h3>
+        <div id="delayPred"></div>
+    </div>
+
+    <div class="card intel-card span-2">
+        <h3>Operational Analytics</h3>
+        <div class="analytics-row">
+            <canvas id="tripsChart" height="220"></canvas>
+            <canvas id="costChart" height="220"></canvas>
+        </div>
+    </div>
+
+    <div class="card intel-card span-2">
+        <h3>Fleet AI Assistant</h3>
+        <p class="page-subtitle">Ask about your fleet: try "high-risk vehicles", "maintenance summary", "best vehicle for a trip", "expired licenses", "fuel efficiency leaders".</p>
+        <div id="chatLog" class="chat-log"></div>
+        <div class="form-row">
+            <input id="chatInput" placeholder="Ask Fleet AI...">
+            <button class="btn" id="chatSend">Send</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.FLEET_DATA = {{ fleet_data | tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/intelligence.js') }}"></script>
+{% endblock %}
